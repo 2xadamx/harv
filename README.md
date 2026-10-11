@@ -4,7 +4,7 @@
 
 **Vision:** make mathematical models directly executable. Unity renders triangles; HARV aims to make equations executable.
 
-**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 33 passing tests.
+**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 36 passing tests, including rainfall and Kepler-orbit regression checks.
 
 **Not implemented yet:** Rust compilation, vector or field state, Navier–Stokes/PDE execution, AI learning operators such as `backward()`, GPU acceleration, 512×512 ocean performance, 50 FPS, and a hosted `harv.cloud` service. Those are goals, not measured results or current capabilities.
 
