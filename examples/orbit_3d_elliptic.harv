@@ -1,0 +1,47 @@
+# Elliptical Earth orbit (eccentricity 0.2) in a plane tilted 45 degrees.
+# Periapsis initial condition; point-mass gravity only.
+state EllipticOrbit3D {
+    x: scalar<m>
+    y: scalar<m>
+    z: scalar<m>
+    vx: scalar<m/s>
+    vy: scalar<m/s>
+    vz: scalar<m/s>
+    mu: scalar<m^3/s^2>
+}
+
+init EllipticOrbit3D {
+    x = 7.0e6<m>
+    y = 0<m>
+    z = 0<m>
+    vx = 0<m/s>
+    vy = 5845.147744436038<m/s>
+    vz = 5845.147744436038<m/s>
+    mu = 3.986004418e14<m^3/s^2>
+}
+
+operator NewtonianGravity3D {
+    dx_dt = vx
+    dy_dt = vy
+    dz_dt = vz
+    dvx_dt = -mu*x / (x*x + y*y + z*z)^1.5
+    dvy_dt = -mu*y / (x*x + y*y + z*z)^1.5
+    dvz_dt = -mu*z / (x*x + y*y + z*z)^1.5
+    dmu_dt = 0<m^3/s^3>
+}
+
+constraint x*x + y*y + z*z > 0<m^2>
+
+evolve EllipticOrbit3D using NewtonianGravity3D {
+    dt = 2<s>
+    duration = 8000<s>
+    method = RK4
+}
+
+observe x
+observe y
+observe z
+observe vx
+observe vy
+observe vz
+observe mu

@@ -165,3 +165,44 @@ def test_3d_orbit_matches_analytic_solution_at_a_different_radius():
         actual = tuple(row[key] for key in ("x", "y", "z"))
         error = math.sqrt(sum((actual[i] - expected[i])**2 for i in range(3))) / radius0
         assert error < 1e-10
+
+
+def test_3d_elliptic_orbit_matches_kepler_equation_solution():
+    source = read_example("orbit_3d_elliptic.harv")
+    check(parse(source))
+    _, _, rows = execute_source(source)
+    mu = rows[0]["mu"]
+    periapsis = rows[0]["x"]
+    eccentricity = 0.2
+    semi_major_axis = periapsis / (1 - eccentricity)
+    mean_motion = math.sqrt(mu / semi_major_axis**3)
+    minor_scale = semi_major_axis * math.sqrt(1 - eccentricity**2)
+
+    assert len(rows) == 4001
+    max_position_error = 0.0
+    max_velocity_error = 0.0
+    for row in rows:
+        mean_anomaly = mean_motion * row["t"]
+        eccentric_anomaly = mean_anomaly
+        for _ in range(12):
+            correction = (eccentric_anomaly - eccentricity * math.sin(eccentric_anomaly) - mean_anomaly) / (1 - eccentricity * math.cos(eccentric_anomaly))
+            eccentric_anomaly -= correction
+            if abs(correction) < 1e-14:
+                break
+        cosine, sine = math.cos(eccentric_anomaly), math.sin(eccentric_anomaly)
+        denominator = 1 - eccentricity * cosine
+        expected_r = (semi_major_axis * (cosine - eccentricity),
+                      minor_scale * sine / math.sqrt(2),
+                      minor_scale * sine / math.sqrt(2))
+        expected_v = (-semi_major_axis * mean_motion * sine / denominator,
+                      minor_scale * mean_motion * cosine / denominator / math.sqrt(2),
+                      minor_scale * mean_motion * cosine / denominator / math.sqrt(2))
+        actual_r = tuple(row[key] for key in ("x", "y", "z"))
+        actual_v = tuple(row[key] for key in ("vx", "vy", "vz"))
+        position_error = math.sqrt(sum((actual_r[i] - expected_r[i])**2 for i in range(3))) / semi_major_axis
+        velocity_error = math.sqrt(sum((actual_v[i] - expected_v[i])**2 for i in range(3))) / math.sqrt(mu / semi_major_axis)
+        max_position_error = max(max_position_error, position_error)
+        max_velocity_error = max(max_velocity_error, velocity_error)
+
+    assert max_position_error < 1e-10
+    assert max_velocity_error < 1e-10

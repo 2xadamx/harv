@@ -4,7 +4,7 @@
 
 **Vision:** make mathematical models directly executable. Unity renders triangles; HARV aims to make equations executable.
 
-**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 39 passing tests, including rainfall and 2D/3D Kepler-orbit regression checks, a second orbital radius, and RK4 step refinement.
+**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 40 passing tests, including rainfall, 2D/3D circular and 3D elliptic Kepler-orbit regression checks, a second orbital radius, and RK4 step refinement.
 
 **Not implemented yet:** Rust compilation, vector or field state, Navier–Stokes/PDE execution, AI learning operators such as `backward()`, GPU acceleration, 512×512 ocean performance, 50 FPS, and a hosted `harv.cloud` service. Those are goals, not measured results or current capabilities.
 
@@ -125,6 +125,8 @@ python scripts/analyze_orbit_3d.py
 This is a three-coordinate ODE example, not general vector/tensor support, a 3D scene renderer, or a spatial field solver. It validates the existing scalar runtime on an inclined orbit; it does not discover a new orbit or model real-world perturbations.
 
 The regression suite also repeats the 3D trajectory at 8 s, 4 s, and 2 s steps over a shared duration. While truncation error dominates, halving RK4's step should reduce global error by about a factor of 16; a second-radius case checks that the result is not tied to one initial orbit.
+
+`examples/orbit_3d_elliptic.harv` adds a 3D ellipse with eccentricity 0.2. Its test solves Kepler's equation for each sample and compares position and velocity to the analytic trajectory. This checks a non-circular orbit without adding perturbations or claiming a real mission model.
 
 ![HARV rain simulation: rainfall intensity, soil water, and accumulated runoff over two hours](docs/assets/rain_response.svg)
 
