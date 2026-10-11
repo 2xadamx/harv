@@ -1,0 +1,20 @@
+state Drain {
+    x: scalar<m>
+}
+
+init Drain {
+    x = 0.5<m>
+}
+
+operator Empty {
+    dx_dt = -1<m/s>
+}
+
+evolve Drain using Empty {
+    dt = 1<s>
+    duration = 1<s>
+    method = RK4
+}
+
+constraint x > 0<m>
+observe x

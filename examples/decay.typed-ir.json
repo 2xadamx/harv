@@ -1,0 +1,114 @@
+{
+  "ir_format": "harv.typed-ir/0.1",
+  "name": "Decay",
+  "fields": [
+    {
+      "name": "x",
+      "dimension": [
+        [
+          "m",
+          1,
+          1
+        ]
+      ],
+      "initial_si": 1.0
+    },
+    {
+      "name": "k",
+      "dimension": [
+        [
+          "s",
+          -1,
+          1
+        ]
+      ],
+      "initial_si": 2.0
+    }
+  ],
+  "derivatives": [
+    {
+      "target": "x",
+      "expression": {
+        "op": "binary:*",
+        "value": null,
+        "args": [
+          {
+            "op": "unary:-",
+            "value": null,
+            "args": [
+              {
+                "op": "reference",
+                "value": "k",
+                "args": [],
+                "dimension": [
+                  [
+                    "s",
+                    -1,
+                    1
+                  ]
+                ]
+              }
+            ],
+            "dimension": [
+              [
+                "s",
+                -1,
+                1
+              ]
+            ]
+          },
+          {
+            "op": "reference",
+            "value": "x",
+            "args": [],
+            "dimension": [
+              [
+                "m",
+                1,
+                1
+              ]
+            ]
+          }
+        ],
+        "dimension": [
+          [
+            "m",
+            1,
+            1
+          ],
+          [
+            "s",
+            -1,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "target": "k",
+      "expression": {
+        "op": "constant",
+        "value": 0.0,
+        "args": [],
+        "dimension": [
+          [
+            "s",
+            -2,
+            1
+          ]
+        ]
+      }
+    }
+  ],
+  "time": {
+    "start_seconds": 0.0,
+    "step_seconds": 0.01,
+    "duration_seconds": 5.0,
+    "steps": 500
+  },
+  "solver": "RK4",
+  "observations": [
+    "x"
+  ],
+  "constraints": []
+}

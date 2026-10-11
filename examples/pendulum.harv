@@ -1,0 +1,30 @@
+state Pendulum {
+    theta: scalar<rad>
+    omega: scalar<rad/s>
+    g: scalar<m/s^2>
+    length: scalar<m>
+}
+
+init Pendulum {
+    theta = 0.2<rad>
+    omega = 0<rad/s>
+    g = 9.81<m/s^2>
+    length = 1<m>
+}
+
+operator Mechanics {
+    # d²theta/dt² = -(g/length) sin(theta), written as two first-order ODEs.
+    dtheta_dt = omega
+    domega_dt = -g/length*sin(theta)
+    dg_dt = 0<m/s^3>
+    dlength_dt = 0<m/s>
+}
+
+evolve Pendulum using Mechanics {
+    dt = 0.01<s>
+    duration = 10<s>
+    method = RK4
+}
+
+observe theta
+observe omega

@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:harv:schema:harv-model:0.1",
+  "title": "HARV scalar ODE machine model 0.1",
+  "description": "Transport shape for an explicit deterministic scalar ODE model. Semantic and dimensional validation is still required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "name", "states", "parameters", "derivatives", "time", "solver", "observe"],
+  "properties": {
+    "format": {"const": "harv.model/0.1"},
+    "name": {"$ref": "#/$defs/identifier"},
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "unit", "initial"],
+        "properties": {
+          "name": {"$ref": "#/$defs/identifier"},
+          "unit": {"$ref": "#/$defs/unit"},
+          "initial": {"$ref": "#/$defs/quantity"}
+        }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value", "unit"],
+        "properties": {
+          "name": {"$ref": "#/$defs/identifier"},
+          "value": {"type": "number"},
+          "unit": {"$ref": "#/$defs/unit"}
+        }
+      }
+    },
+    "derivatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "expr"],
+        "properties": {
+          "target": {"$ref": "#/$defs/identifier"},
+          "expr": {"$ref": "#/$defs/expression"}
+        }
+      }
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "duration", "step"],
+      "properties": {
+        "start": {"$ref": "#/$defs/quantity"},
+        "duration": {"$ref": "#/$defs/quantity"},
+        "step": {"$ref": "#/$defs/quantity"}
+      }
+    },
+    "solver": {"enum": ["rk4", "euler"]},
+    "observe": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "constraints": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expr"],
+        "properties": {"expr": {"$ref": "#/$defs/expression"}}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Non-executable origin and assumptions supplied by the model author or proposing agent.",
+      "additionalProperties": false,
+      "properties": {
+        "producer": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "assumptions": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unit expression parsed and checked against HARV's unit table."
+    },
+    "quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {"type": "number"},
+        "unit": {"$ref": "#/$defs/unit"}
+      }
+    },
+    "expression": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["op", "value"],
+          "properties": {
+            "op": {"const": "constant"},
+            "value": {"type": "number"},
+            "unit": {"$ref": "#/$defs/unit"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["op", "name"],
+          "properties": {
+            "op": {"enum": ["state", "parameter"]},
+            "name": {"$ref": "#/$defs/identifier"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["op"],
+          "properties": {"op": {"const": "time"}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["op", "arg"],
+          "properties": {
+            "op": {"const": "neg"},
+            "arg": {"$ref": "#/$defs/expression"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["op", "left", "right"],
+          "properties": {
+            "op": {"enum": ["add", "sub", "mul", "div", "pow", "lt", "gt", "le", "ge", "eq", "ne"]},
+            "left": {"$ref": "#/$defs/expression"},
+            "right": {"$ref": "#/$defs/expression"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["op", "function", "args"],
+          "properties": {
+            "op": {"const": "call"},
+            "function": {"enum": ["sin", "cos", "tan", "exp", "log"]},
+            "args": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {"$ref": "#/$defs/expression"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

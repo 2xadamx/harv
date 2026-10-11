@@ -1,0 +1,23 @@
+state Decay {
+    x: scalar<m>
+    k: scalar<1/s>
+}
+
+init Decay {
+    x = 1.0<m>
+    k = 2.0<1/s>
+}
+
+operator Physics {
+    dx_dt = -k*x
+    dk_dt = 0<1/s^2>
+}
+
+evolve Decay using Physics {
+    dt = 0.01<s>
+    duration = 5<s>
+    method = RK4
+}
+
+constraint x > 0<m>
+observe x

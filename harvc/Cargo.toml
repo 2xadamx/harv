@@ -1,0 +1,11 @@
+[package]
+name = "harvc"
+version = "0.1.0"
+edition = "2021"
+description = "HARV compiler frontend types"
+
+[lib]
+name = "harvc"
+path = "src/lib.rs"
+
+[dependencies]

@@ -1,0 +1,31 @@
+{
+  "format": "harv.model/0.1",
+  "name": "exponential_decay",
+  "states": [
+    {"name": "x", "unit": "m", "initial": {"value": 1, "unit": "m"}}
+  ],
+  "parameters": [
+    {"name": "k", "value": 2, "unit": "1/s"}
+  ],
+  "derivatives": [
+    {
+      "target": "x",
+      "expr": {
+        "op": "mul",
+        "left": {"op": "neg", "arg": {"op": "parameter", "name": "k"}},
+        "right": {"op": "state", "name": "x"}
+      }
+    }
+  ],
+  "time": {
+    "start": {"value": 0, "unit": "s"},
+    "duration": {"value": 5, "unit": "s"},
+    "step": {"value": 0.01, "unit": "s"}
+  },
+  "solver": "rk4",
+  "observe": ["x"],
+  "provenance": {
+    "producer": "human-authored example",
+    "assumptions": ["constant decay rate", "deterministic scalar ODE"]
+  }
+}

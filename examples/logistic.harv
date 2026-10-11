@@ -1,0 +1,25 @@
+state Logistic {
+    x: scalar
+    r: scalar<1/s>
+    capacity: scalar
+}
+
+init Logistic {
+    x = 0.1
+    r = 1.2<1/s>
+    capacity = 1.0
+}
+
+operator Growth {
+    dx_dt = r*x*(1-x/capacity)
+    dr_dt = 0<1/s^2>
+    dcapacity_dt = 0<1/s>
+}
+
+evolve Logistic using Growth {
+    dt = 0.01<s>
+    duration = 5<s>
+    method = RK4
+}
+
+observe x

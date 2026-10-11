@@ -1,0 +1,35 @@
+# SIR homogéneo y cerrado. S, I y R son fracciones de la población total.
+# beta y gamma son constantes; las tasas están expresadas por año.
+state SIR {
+    S: scalar
+    I: scalar
+    R: scalar
+    beta: scalar<1/year>
+    gamma: scalar<1/year>
+}
+
+init SIR {
+    S = 0.99
+    I = 0.01
+    R = 0.0
+    beta = 0.8<1/year>
+    gamma = 0.25<1/year>
+}
+
+operator Spread {
+    dS_dt = -beta*S*I
+    dI_dt = beta*S*I-gamma*I
+    dR_dt = gamma*I
+    dbeta_dt = 0<1/year^2>
+    dgamma_dt = 0<1/year^2>
+}
+
+evolve SIR using Spread {
+    dt = 0.01<year>
+    duration = 40<year>
+    method = RK4
+}
+
+observe S
+observe I
+observe R

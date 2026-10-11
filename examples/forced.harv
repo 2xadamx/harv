@@ -1,0 +1,25 @@
+state Forced {
+    x: scalar<m>
+    amplitude: scalar<m/s>
+    omega: scalar<1/s>
+}
+
+init Forced {
+    x = 0<m>
+    amplitude = 1<m/s>
+    omega = 2<1/s>
+}
+
+operator Drive {
+    dx_dt = amplitude*sin(omega*t)
+    damplitude_dt = 0<m/s^2>
+    domega_dt = 0<1/s^2>
+}
+
+evolve Forced using Drive {
+    dt = 0.01<s>
+    duration = 5<s>
+    method = RK4
+}
+
+observe x

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:harv:schema:harv-typed-ir:0.1",
+  "title": "HARV typed scalar ODE IR 0.1",
+  "description": "Canonical backend-neutral form emitted after source validation and SI normalization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ir_format", "name", "fields", "derivatives", "time", "solver", "observations"],
+  "properties": {
+    "ir_format": {"const": "harv.typed-ir/0.1"},
+    "name": {"$ref": "#/$defs/identifier"},
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "dimension", "initial_si"],
+        "properties": {
+          "name": {"$ref": "#/$defs/identifier"},
+          "dimension": {"$ref": "#/$defs/dimension"},
+          "initial_si": {"type": "number"}
+        }
+      }
+    },
+    "derivatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "expression"],
+        "properties": {
+          "target": {"$ref": "#/$defs/identifier"},
+          "expression": {"$ref": "#/$defs/expression"}
+        }
+      }
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_seconds", "step_seconds", "duration_seconds", "steps"],
+      "properties": {
+        "start_seconds": {"type": "number"},
+        "step_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "duration_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "steps": {"type": "integer", "minimum": 1, "maximum": 1000000}
+      }
+    },
+    "solver": {"enum": ["RK4", "Euler"]},
+    "observations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/identifier"}
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expression", "line"],
+        "properties": {
+          "expression": {"$ref": "#/$defs/expression"},
+          "line": {"type": ["integer", "null"], "minimum": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "power": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "string", "minLength": 1},
+        {"type": "integer"},
+        {"type": "integer", "minimum": 1}
+      ],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "dimension": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/power"}
+    },
+    "expression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "value", "args", "dimension"],
+      "properties": {
+        "op": {"enum": ["constant", "reference", "unary:+", "unary:-", "binary:+", "binary:-", "binary:*", "binary:/", "binary:^", "binary:**", "binary:<", "binary:>", "binary:<=", "binary:>=", "binary:==", "binary:!=", "call:sin", "call:cos", "call:tan", "call:exp", "call:log", "call:sqrt", "call:abs", "call:min", "call:max"]},
+        "value": {"type": ["number", "string", "null"]},
+        "args": {"type": "array", "items": {"$ref": "#/$defs/expression"}},
+        "dimension": {"$ref": "#/$defs/dimension"}
+      },
+      "allOf": [
+        {"if": {"properties": {"op": {"const": "constant"}}}, "then": {"properties": {"value": {"type": "number"}, "args": {"maxItems": 0}}}},
+        {"if": {"properties": {"op": {"const": "reference"}}}, "then": {"properties": {"value": {"$ref": "#/$defs/identifier"}, "args": {"maxItems": 0}}}},
+        {"if": {"properties": {"op": {"pattern": "^unary:"}}}, "then": {"properties": {"value": {"type": "null"}, "args": {"minItems": 1, "maxItems": 1}}}},
+        {"if": {"properties": {"op": {"pattern": "^binary:"}}}, "then": {"properties": {"value": {"type": "null"}, "args": {"minItems": 2, "maxItems": 2}}}},
+        {"if": {"properties": {"op": {"pattern": "^call:"}}}, "then": {"properties": {"value": {"type": "null"}, "args": {"minItems": 1}}}},
+        {"if": {"properties": {"op": {"pattern": "^call:(sin|cos|tan|exp|log|sqrt|abs)$"}}}, "then": {"properties": {"args": {"minItems": 1, "maxItems": 1}}}}
+      ]
+    }
+  }
+}

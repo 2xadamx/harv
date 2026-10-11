@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:harv:schema:harv-run-record:0.1",
+  "title": "HARV reproducibility record 0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_format", "input", "model", "typed_ir_sha256", "execution", "output"],
+  "properties": {
+    "record_format": {"const": "harv.run-record/0.1"},
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "format", "sha256"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "format": {"enum": ["harv.source/0.1", "harv.model/0.1"]},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {"name": {"type": "string", "minLength": 1}}
+    },
+    "typed_ir_sha256": {"$ref": "#/$defs/sha256"},
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harv_version", "python_implementation", "python_version", "solver", "time_unit", "start", "step", "duration", "steps", "observations"],
+      "properties": {
+        "harv_version": {"type": "string", "minLength": 1},
+        "python_implementation": {"type": "string", "minLength": 1},
+        "python_version": {"type": "string", "minLength": 1},
+        "solver": {"enum": ["RK4", "Euler"]},
+        "time_unit": {"const": "s"},
+        "start": {"type": "number"},
+        "step": {"type": "number", "exclusiveMinimum": 0},
+        "duration": {"type": "number", "exclusiveMinimum": 0},
+        "steps": {"type": "integer", "minimum": 1},
+        "observations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["csv_file", "csv_sha256"],
+      "properties": {
+        "csv_file": {"type": ["string", "null"]},
+        "csv_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}
