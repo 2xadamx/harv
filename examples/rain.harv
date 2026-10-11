@@ -1,0 +1,40 @@
+# Lumped rain and soil-water example; not a spatial weather or CFD model.
+state RainSoil {
+    rain_rate: scalar<m/s>
+    soil_water: scalar<m>
+    runoff_depth: scalar<m>
+    storm_decay: scalar<1/s>
+    infiltration_fraction: scalar
+    drainage_rate: scalar<1/s>
+}
+
+init RainSoil {
+    rain_rate = 5.5555555556e-6<m/s> # 20 mm/hour
+    soil_water = 0.04<m>             # 40 mm equivalent water depth
+    runoff_depth = 0<m>
+    storm_decay = 5.5555555556e-4<1/s> # rain-rate e-folding time: 30 min
+    infiltration_fraction = 0.7
+    drainage_rate = 2.7777777778e-4<1/s> # soil-water e-folding time: 1 hour
+}
+
+operator RainAndDrainage {
+    drain_rate_dt = -storm_decay * rain_rate
+    dsoil_water_dt = infiltration_fraction * rain_rate - drainage_rate * soil_water
+    drunoff_depth_dt = (1 - infiltration_fraction) * rain_rate
+    dstorm_decay_dt = 0<1/s^2>
+    dinfiltration_fraction_dt = 0<1/s>
+    ddrainage_rate_dt = 0<1/s^2>
+}
+
+constraint soil_water > 0<m>
+constraint runoff_depth >= 0<m>
+
+evolve RainSoil using RainAndDrainage {
+    dt = 10<s>
+    duration = 7200<s>
+    method = RK4
+}
+
+observe rain_rate
+observe soil_water
+observe runoff_depth

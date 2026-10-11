@@ -21,7 +21,7 @@ This repository contains a runnable **v0.1 scalar ODE MVP**, implemented as a Py
 - Deterministic Euler and classical RK4 solvers.
 - `t`, SI base units `m`, `s`, `kg`, `K`, `A`, and compound units such as `m/s^2` and `1/s`; `rad` is dimensionless and `deg` converts to radians.
 - `harvc check`, `harvc ast`, and `harvc run`; optional CSV time-series output.
-- Decay, logistic growth, forced oscillator, pendulum and SIR examples.
+- Decay, logistic growth, forced oscillator, pendulum, SIR, lumped rainfall/infiltration/runoff, and two-body orbit examples.
 
 ## Requirements and installation
 
@@ -98,6 +98,33 @@ observe x
 The `operator` computes derivatives from the current state and time; the solver owns state updates. `constraint x > 0<m>` declares an executable predicate. Comparisons require dimensionally compatible operands, so a length is compared with `0<m>`, not a unitless zero. If the predicate becomes false at an integration stage, the solver stops and reports the constraint and time; it does not project or repair the state. `observe` controls which state values appear in output (time is always included). Each declared scalar needs one initial value and one derivative. `dt` and `duration` must be positive, use compatible time units, and divide evenly; the runtime normalizes time to seconds.
 
 `examples/sir.harv` is a closed, homogeneously mixed SIR model with fixed rates and population fractions. Its test checks that `S + I + R` remains 1 under RK4. It is a numerical example, not a calibrated epidemiological model or forecast.
+
+`examples/rain.harv` is a lumped scalar ODE: rain intensity fades exponentially, a fixed fraction infiltrates, soil water drains linearly, and the remainder accumulates as runoff. Its dimensional constraints and RK4 trajectory run on the existing scalar solver. It has no spatial grid, terrain, clouds, or fluid dynamics, so it is a teaching model rather than a weather forecast.
+
+`examples/orbit.harv` is an ideal circular Earth orbit under Newtonian point-mass gravity. It exercises dimensional square roots and fractional powers in the force law. Check its RK4 trajectory against the analytic Kepler orbit, including energy, angular momentum, and radius drift:
+
+```powershell
+harv run examples/orbit.harv --csv outputs/orbit_trajectory.csv
+python scripts/analyze_orbit.py
+python scripts/plot_orbit.py
+```
+
+With the included 2 s step, the analytic period is 5828.5166 s. Over 2914 steps, the checker reports a final position error of `3.10e-12` times the orbital radius and maximum relative specific-energy drift of `3.66e-15` (Python `float64`; this is a numerical benchmark, not a universal accuracy guarantee).
+
+![HARV orbital trajectory compared with Kepler's analytic orbit and its position error](docs/assets/orbit_result.svg)
+
+This reproduces a known orbital result; it is a numerical validation example, not a new space discovery or an operational trajectory. Atmospheric drag, Earth's oblateness, other bodies, and relativity are omitted.
+
+![HARV rain simulation: rainfall intensity, soil water, and accumulated runoff over two hours](docs/assets/rain_response.svg)
+
+Reproduce its time series and figure without plotting dependencies:
+
+```powershell
+harv run examples/rain.harv --csv outputs/rain_trajectory.csv
+python scripts/plot_rain.py
+```
+
+The plot converts the solver's SI output to hours, millimetres, and millimetres per hour, and writes the figure shown above.
 
 ## Project layout
 

@@ -1,0 +1,39 @@
+# Circular two-body orbit at a 7,000 km geocentric radius.
+# Point-mass Earth model; no atmosphere, oblateness, Moon, or relativity.
+state Orbit {
+    x: scalar<m>
+    y: scalar<m>
+    vx: scalar<m/s>
+    vy: scalar<m/s>
+    mu: scalar<m^3/s^2>
+}
+
+init Orbit {
+    x = 7.0e6<m>
+    y = 0<m>
+    vx = 0<m/s>
+    vy = 7546.053290107542<m/s> # sqrt(mu / r0), circular-orbit speed
+    mu = 3.986004418e14<m^3/s^2>
+}
+
+operator NewtonianGravity {
+    dx_dt = vx
+    dy_dt = vy
+    dvx_dt = -mu*x / (x*x + y*y)^1.5
+    dvy_dt = -mu*y / (x*x + y*y)^1.5
+    dmu_dt = 0<m^3/s^3>
+}
+
+constraint x*x + y*y > 0<m^2>
+
+evolve Orbit using NewtonianGravity {
+    dt = 2<s>
+    duration = 5828<s>
+    method = RK4
+}
+
+observe x
+observe y
+observe vx
+observe vy
+observe mu
