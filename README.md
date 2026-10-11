@@ -4,7 +4,7 @@
 
 **Vision:** make mathematical models directly executable. Unity renders triangles; HARV aims to make equations executable.
 
-**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 40 passing tests, including rainfall, 2D/3D circular and 3D elliptic Kepler-orbit regression checks, a second orbital radius, and RK4 step refinement.
+**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 41 passing tests, including rainfall, a linear shallow-water wave mode, 2D/3D circular and 3D elliptic Kepler-orbit regression checks, a second orbital radius, and RK4 step refinement.
 
 **Not implemented yet:** Rust compilation, vector or field state, Navier–Stokes/PDE execution, AI learning operators such as `backward()`, GPU acceleration, 512×512 ocean performance, 50 FPS, and a hosted `harv.cloud` service. Those are goals, not measured results or current capabilities.
 
@@ -136,6 +136,14 @@ python scripts/analyze_orbit_3d_elliptic.py
 ```
 
 The audit derives orbital eccentricity and semimajor axis from the CSV's initial conditions, then reports maximum trajectory error plus energy and angular-momentum drift. As with the circular benchmark, this covers an ideal Newtonian point mass only.
+
+`examples/water_wave_1d.harv` is the first water-model step: a single right-moving Fourier mode of the linear shallow-water equations on flat, constant-depth water. The spatial equations reduce to four mode-coefficient ODEs, which HARV integrates with RK4. The regression test compares every coefficient to the analytic traveling wave and checks the conserved mode energy:
+
+```powershell
+harv run examples/water_wave_1d.harv --csv outputs/water_wave_1d.csv
+```
+
+This is a modal water-wave benchmark, not a discretized spatial field. It does not yet simulate a puddle, shoreline, wetting/drying, or a lake. Those require a `field1d`/grid representation and a spatial flux solver; the water front meeting dry cells is a distinct numerical challenge ([GeoClaw documentation](https://www.clawpack.org/geoclaw.html)).
 
 ![HARV rain simulation: rainfall intensity, soil water, and accumulated runoff over two hours](docs/assets/rain_response.svg)
 

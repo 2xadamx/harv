@@ -206,3 +206,39 @@ def test_3d_elliptic_orbit_matches_kepler_equation_solution():
 
     assert max_position_error < 1e-10
     assert max_velocity_error < 1e-10
+
+
+def test_linear_shallow_water_mode_matches_analytic_traveling_wave_and_conserves_energy():
+    source = read_example("water_wave_1d.harv")
+    check(parse(source))
+    _, _, rows = execute_source(source)
+    initial = rows[0]
+    amplitude = initial["eta_sin"]
+    depth = initial["depth"]
+    gravity = initial["gravity"]
+    wave_number = initial["wave_number"]
+    celerity = math.sqrt(gravity * depth)
+    angular_frequency = celerity * wave_number
+    velocity_amplitude = celerity / depth * amplitude
+    energy0 = 0.5 * gravity * amplitude**2 + 0.5 * depth * velocity_amplitude**2
+
+    assert len(rows) == 5001
+    max_surface_error = 0.0
+    max_velocity_error = 0.0
+    max_energy_drift = 0.0
+    for row in rows:
+        phase = angular_frequency * row["t"]
+        expected = {
+            "eta_cos": -amplitude * math.sin(phase),
+            "eta_sin": amplitude * math.cos(phase),
+            "u_cos": -velocity_amplitude * math.sin(phase),
+            "u_sin": velocity_amplitude * math.cos(phase),
+        }
+        max_surface_error = max(max_surface_error, math.hypot(row["eta_cos"] - expected["eta_cos"], row["eta_sin"] - expected["eta_sin"]) / amplitude)
+        max_velocity_error = max(max_velocity_error, math.hypot(row["u_cos"] - expected["u_cos"], row["u_sin"] - expected["u_sin"]) / velocity_amplitude)
+        energy = 0.5 * gravity * (row["eta_cos"]**2 + row["eta_sin"]**2) + 0.5 * depth * (row["u_cos"]**2 + row["u_sin"]**2)
+        max_energy_drift = max(max_energy_drift, abs((energy - energy0) / energy0))
+
+    assert max_surface_error < 1e-9
+    assert max_velocity_error < 1e-9
+    assert max_energy_drift < 1e-10

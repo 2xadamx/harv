@@ -1,0 +1,48 @@
+# Linear shallow-water wave: one right-moving Fourier mode on a flat,
+# periodic domain. The spatial profile is reconstructed from these modes;
+# this example does not yet use a discrete spatial grid.
+state WaterWaveMode {
+    eta_cos: scalar<m>
+    eta_sin: scalar<m>
+    u_cos: scalar<m/s>
+    u_sin: scalar<m/s>
+    depth: scalar<m>
+    gravity: scalar<m/s^2>
+    wave_number: scalar<1/m>
+}
+
+init WaterWaveMode {
+    eta_cos = 0<m>
+    eta_sin = 0.1<m>
+    u_cos = 0<m/s>
+    u_sin = 0.09904544411531506<m/s>
+    depth = 10<m>
+    gravity = 9.81<m/s^2>
+    wave_number = 0.6283185307179586<1/m>
+}
+
+operator LinearShallowWater {
+    # eta_t + depth * u_x = 0
+    # u_t + gravity * eta_x = 0
+    deta_cos_dt = -depth * wave_number * u_sin
+    deta_sin_dt = depth * wave_number * u_cos
+    du_cos_dt = -gravity * wave_number * eta_sin
+    du_sin_dt = gravity * wave_number * eta_cos
+    ddepth_dt = 0<m/s>
+    dgravity_dt = 0<m/s^3>
+    dwave_number_dt = 0<1/m/s>
+}
+
+evolve WaterWaveMode using LinearShallowWater {
+    dt = 0.001<s>
+    duration = 5<s>
+    method = RK4
+}
+
+observe eta_cos
+observe eta_sin
+observe u_cos
+observe u_sin
+observe depth
+observe gravity
+observe wave_number
