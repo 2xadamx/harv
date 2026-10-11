@@ -128,6 +128,15 @@ The regression suite also repeats the 3D trajectory at 8 s, 4 s, and 2 s steps o
 
 `examples/orbit_3d_elliptic.harv` adds a 3D ellipse with eccentricity 0.2. Its test solves Kepler's equation for each sample and compares position and velocity to the analytic trajectory. This checks a non-circular orbit without adding perturbations or claiming a real mission model.
 
+Save and inspect its complete trajectory and audit metrics with:
+
+```powershell
+harv run examples/orbit_3d_elliptic.harv --csv outputs/orbit_3d_elliptic_trajectory.csv
+python scripts/analyze_orbit_3d_elliptic.py
+```
+
+The audit derives orbital eccentricity and semimajor axis from the CSV's initial conditions, then reports maximum trajectory error plus energy and angular-momentum drift. As with the circular benchmark, this covers an ideal Newtonian point mass only.
+
 ![HARV rain simulation: rainfall intensity, soil water, and accumulated runoff over two hours](docs/assets/rain_response.svg)
 
 Reproduce its time series and figure without plotting dependencies:
