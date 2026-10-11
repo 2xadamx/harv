@@ -121,3 +121,47 @@ def test_3d_orbit_matches_inclined_kepler_solution_and_conserves_invariants():
         assert abs((energy - energy0) / energy0) < 1e-11
         assert abs((h_norm - h0_norm) / h0_norm) < 1e-11
         assert abs(radius - radius0) / radius0 < 1e-10
+
+
+def test_3d_orbit_rk4_error_decreases_at_fourth_order_when_step_is_halved():
+    source = read_example("orbit_3d.harv").replace("duration = 5828<s>", "duration = 5824<s>")
+    errors = []
+    for dt in (8, 4, 2):
+        model = source.replace("dt = 2<s>", f"dt = {dt}<s>")
+        _, _, rows = execute_source(model)
+        initial = rows[0]
+        r0 = tuple(initial[key] for key in ("x", "y", "z"))
+        v0 = tuple(initial[key] for key in ("vx", "vy", "vz"))
+        mu = initial["mu"]
+        radius0 = math.sqrt(sum(value * value for value in r0))
+        mean_motion = math.sqrt(mu / radius0**3)
+        max_error = 0.0
+        for row in rows:
+            phase = mean_motion * row["t"]
+            expected = tuple(r0[i] * math.cos(phase) + v0[i] / mean_motion * math.sin(phase) for i in range(3))
+            actual = tuple(row[key] for key in ("x", "y", "z"))
+            max_error = max(max_error, math.sqrt(sum((actual[i] - expected[i])**2 for i in range(3))) / radius0)
+        errors.append(max_error)
+
+    # Classical RK4's global error scales as dt^4 while truncation dominates.
+    assert 14.0 < errors[0] / errors[1] < 18.0
+    assert 14.0 < errors[1] / errors[2] < 18.0
+
+
+def test_3d_orbit_matches_analytic_solution_at_a_different_radius():
+    source = read_example("orbit_3d.harv").replace("7.0e6<m>", "8.0e6<m>")
+    speed_component = math.sqrt(3.986004418e14 / 8.0e6) / math.sqrt(2)
+    source = source.replace("5335.865452630101<m/s>", f"{speed_component:.15f}<m/s>")
+    _, _, rows = execute_source(source)
+    initial = rows[0]
+    r0 = tuple(initial[key] for key in ("x", "y", "z"))
+    v0 = tuple(initial[key] for key in ("vx", "vy", "vz"))
+    radius0 = math.sqrt(sum(value * value for value in r0))
+    mean_motion = math.sqrt(initial["mu"] / radius0**3)
+
+    for row in rows:
+        phase = mean_motion * row["t"]
+        expected = tuple(r0[i] * math.cos(phase) + v0[i] / mean_motion * math.sin(phase) for i in range(3))
+        actual = tuple(row[key] for key in ("x", "y", "z"))
+        error = math.sqrt(sum((actual[i] - expected[i])**2 for i in range(3))) / radius0
+        assert error < 1e-10
