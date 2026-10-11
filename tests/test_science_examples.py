@@ -79,3 +79,45 @@ def test_orbit_matches_kepler_and_conserves_newtonian_invariants():
         angular_momentum = row["x"] * row["vy"] - row["y"] * row["vx"]
         assert abs((energy - initial_energy) / initial_energy) < 1e-11
         assert abs((angular_momentum - initial_angular_momentum) / initial_angular_momentum) < 1e-11
+
+
+def test_3d_orbit_matches_inclined_kepler_solution_and_conserves_invariants():
+    source = read_example("orbit_3d.harv")
+    check(parse(source))
+    _, _, rows = execute_source(source)
+    initial = rows[0]
+    r0 = (initial["x"], initial["y"], initial["z"])
+    v0 = (initial["vx"], initial["vy"], initial["vz"])
+    mu = initial["mu"]
+    radius0 = math.sqrt(sum(value * value for value in r0))
+    speed0 = math.sqrt(sum(value * value for value in v0))
+    mean_motion = math.sqrt(mu / radius0**3)
+    energy0 = 0.5 * speed0**2 - mu / radius0
+    h0 = (r0[1] * v0[2] - r0[2] * v0[1],
+          r0[2] * v0[0] - r0[0] * v0[2],
+          r0[0] * v0[1] - r0[1] * v0[0])
+    h0_norm = math.sqrt(sum(value * value for value in h0))
+
+    assert len(rows) == 2915
+    for row in rows:
+        phase = mean_motion * row["t"]
+        cosine, sine = math.cos(phase), math.sin(phase)
+        expected_r = tuple(r0[i] * cosine + v0[i] / mean_motion * sine for i in range(3))
+        expected_v = tuple(v0[i] * cosine - r0[i] * mean_motion * sine for i in range(3))
+        actual_r = tuple(row[key] for key in ("x", "y", "z"))
+        actual_v = tuple(row[key] for key in ("vx", "vy", "vz"))
+        position_error = math.sqrt(sum((actual_r[i] - expected_r[i])**2 for i in range(3))) / radius0
+        velocity_error = math.sqrt(sum((actual_v[i] - expected_v[i])**2 for i in range(3))) / speed0
+        assert position_error < 1e-10
+        assert velocity_error < 1e-10
+
+        radius = math.sqrt(sum(value * value for value in actual_r))
+        speed_squared = sum(value * value for value in actual_v)
+        energy = 0.5 * speed_squared - mu / radius
+        h = (actual_r[1] * actual_v[2] - actual_r[2] * actual_v[1],
+             actual_r[2] * actual_v[0] - actual_r[0] * actual_v[2],
+             actual_r[0] * actual_v[1] - actual_r[1] * actual_v[0])
+        h_norm = math.sqrt(sum(value * value for value in h))
+        assert abs((energy - energy0) / energy0) < 1e-11
+        assert abs((h_norm - h0_norm) / h0_norm) < 1e-11
+        assert abs(radius - radius0) / radius0 < 1e-10

@@ -4,7 +4,7 @@
 
 **Vision:** make mathematical models directly executable. Unity renders triangles; HARV aims to make equations executable.
 
-**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 36 passing tests, including rainfall and Kepler-orbit regression checks.
+**Verified milestone — 11 October 2026:** the Python v0.1 prototype parses scalar ODE models, checks units, lowers them to typed IR, runs Euler/RK4, and aborts when an explicit scalar comparison constraint fails. `pytest` currently reports 37 passing tests, including rainfall and 2D/3D Kepler-orbit regression checks.
 
 **Not implemented yet:** Rust compilation, vector or field state, Navier–Stokes/PDE execution, AI learning operators such as `backward()`, GPU acceleration, 512×512 ocean performance, 50 FPS, and a hosted `harv.cloud` service. Those are goals, not measured results or current capabilities.
 
@@ -114,6 +114,15 @@ With the included 2 s step, the analytic period is 5828.5166 s. Over 2914 steps,
 ![HARV orbital trajectory compared with Kepler's analytic orbit and its position error](docs/assets/orbit_result.svg)
 
 This reproduces a known orbital result; it is a numerical validation example, not a new space discovery or an operational trajectory. Atmospheric drag, Earth's oblateness, other bodies, and relativity are omitted.
+
+`examples/orbit_3d.harv` extends the same point-mass ODE to scalar `x`, `y`, and `z` coordinates, with the orbital plane tilted 45 degrees. It checks the full 3D position and velocity against the analytic circular solution at every sample and tracks energy, angular-momentum magnitude, and radius drift:
+
+```powershell
+harv run examples/orbit_3d.harv --csv outputs/orbit_3d_trajectory.csv
+python scripts/analyze_orbit_3d.py
+```
+
+This is a three-coordinate ODE example, not general vector/tensor support, a 3D scene renderer, or a spatial field solver. It validates the existing scalar runtime on an inclined orbit; it does not discover a new orbit or model real-world perturbations.
 
 ![HARV rain simulation: rainfall intensity, soil water, and accumulated runoff over two hours](docs/assets/rain_response.svg)
 
